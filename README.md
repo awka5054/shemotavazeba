@@ -1,0 +1,2 @@
+# shemotavazeba
+sauketeso azri dedamiwaze
