@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mkinvarwveri Invitation</title>
+  <meta name="description" content="Will you go to the Mkinvarwveri with me?" />
+
+  <!--
+    SINGLE-FILE WEBSITE
+
+    For shared registrations across different users/devices:
+    1. Create a Supabase project.
+    2. Run the SQL schema near the bottom of this file in Supabase SQL Editor.
+    3. Paste your public Supabase URL and anon key below.
+
+    Without Supabase credentials, this website still works in local preview mode,
+    but registrations are saved only in the current browser.
+  -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg-1: #06121f;
+      --bg-2: #0b1930;
+      --bg-3: #102846;
+      --white: #ffffff;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --sky-100: #e0f2fe;
+      --sky-200: #bae6fd;
+      --sky-300: #7dd3fc;
+      --emerald-100: #d1fae5;
+      --emerald-300: #6ee7b7;
+      --amber-100: #fef3c7;
+      --pink-100: #fce7f3;
+      --red-100: #fee2e2;
+      --red-300: #fca5a5;
+      --radius-xl: 24px;
+      --radius-2xl: 32px;
+      --shadow-glow: 0 0 50px rgba(125, 211, 252, 0.24);
+      --shadow-card: 0 24px 80px rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--slate-100);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.28), transparent 34rem),
+        radial-gradient(circle at top right, rgba(244, 114, 182, 0.18), transparent 30rem),
+        linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 42%, var(--bg-3) 100%);
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: rgba(125, 211, 252, 0.45);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .soft-grid {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      opacity: 0.55;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+      z-index: 0;
+    }
+
+    .snow-layer {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .snow-dot {
+      position: absolute;
+      top: -20px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes fall {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.9;
+      }
+      to {
+        transform: translateY(105vh);
+        opacity: 0;
+      }
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      width: min(100% - 40px, 1180px);
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 0 36px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: rgba(125, 211, 252, 0.14);
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 23px;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+      color: var(--slate-300);
+      font-size: 13px;
+    }
+
+    .privacy-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.10);
+      padding: 10px 16px;
+      border-radius: 999px;
+      color: var(--slate-100);
+      backdrop-filter: blur(18px);
+      font-size: 14px;
+    }
+
+    .hero-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      align-items: center;
+      gap: 46px;
+      padding: 58px 0 70px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(186, 230, 253, 0.25);
+      background: rgba(224, 242, 254, 0.10);
+      padding: 10px 16px;
+      color: var(--sky-100);
+      font-size: 14px;
+      font-weight: 700;
+      backdrop-filter: blur(18px);
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      max-width: 820px;
+      margin: 0;
+      font-size: clamp(48px, 8vw, 92px);
+      line-height: 0.96;
+      letter-spacing: -0.07em;
+      font-weight: 950;
+    }
+
+    .hero-text {
+      max-width: 680px;
+      margin: 28px 0 0;
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.6;
+      color: var(--slate-200);
+    }
+
+    .actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 34px;
+    }
+
+    .btn {
+      border: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 15px 24px;
+      font-weight: 850;
+      transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+      min-height: 54px;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.68;
+    }
+
+    .btn-primary {
+      color: #06121f;
+      background: var(--white);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--sky-100);
+    }
+
+    .btn-secondary {
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.20);
+      background: rgba(255,255,255,0.10);
+      backdrop-filter: blur(18px);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 680px;
+      gap: 12px;
+      margin-top: 40px;
+    }
+
+    .metric-card {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.10);
+      padding: 16px;
+      border-radius: 22px;
+      backdrop-filter: blur(16px);
+    }
+
+    .metric-value {
+      margin: 0;
+      color: var(--white);
+      font-size: 28px;
+      font-weight: 950;
+    }
+
+    .metric-label {
+      margin: 4px 0 0;
+      color: var(--slate-300);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-card);
+      border-radius: var(--radius-2xl);
+    }
+
+    .join-card {
+      padding: 28px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .section-kicker {
+      margin: 0;
+      color: var(--sky-100);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .card-title, .section-title {
+      margin: 10px 0 0;
+      color: var(--white);
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      font-weight: 950;
+    }
+
+    .card-title {
+      font-size: 28px;
+    }
+
+    .muted {
+      margin: 10px 0 0;
+      color: var(--slate-300);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .icon-box {
+      flex: 0 0 auto;
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.10);
+      font-size: 24px;
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .name-input {
+      width: 100%;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.10);
+      color: var(--white);
+      outline: none;
+      padding: 16px 18px;
+      min-height: 56px;
+      transition: border 180ms ease, box-shadow 180ms ease;
+    }
+
+    .name-input::placeholder {
+      color: var(--slate-400);
+    }
+
+    .name-input:focus {
+      border-color: rgba(186, 230, 253, 0.50);
+      box-shadow: 0 0 0 4px rgba(186, 230, 253, 0.15);
+    }
+
+    .message-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .message {
+      border-radius: 20px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .message-error {
+      border: 1px solid rgba(252, 165, 165, 0.24);
+      background: rgba(248, 113, 113, 0.10);
+      color: var(--red-100);
+    }
+
+    .message-success {
+      border: 1px solid rgba(110, 231, 183, 0.24);
+      background: rgba(52, 211, 153, 0.10);
+      color: var(--emerald-100);
+    }
+
+    .message-final {
+      border: 1px solid rgba(125, 211, 252, 0.24);
+      background: rgba(56, 189, 248, 0.10);
+      color: var(--sky-100);
+      font-weight: 800;
+    }
+
+    .progress-box {
+      margin-top: 24px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.10);
+      border-radius: 22px;
+      padding: 16px;
+      color: var(--slate-300);
+      font-size: 14px;
+    }
+
+    .progress-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      color: var(--white);
+      font-weight: 850;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+    }
+
+    .step-dot {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.10);
+      color: var(--slate-400);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .step.done {
+      color: var(--slate-100);
+    }
+
+    .step.done .step-dot {
+      background: var(--emerald-300);
+      color: #064e3b;
+    }
+
+    .mountain-mask {
+      pointer-events: none;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 190px;
+      background: linear-gradient(to top, rgba(226,232,240,0.24), rgba(248,250,252,0.05));
+      clip-path: polygon(0 100%, 10% 74%, 20% 84%, 34% 48%, 46% 74%, 55% 58%, 67% 82%, 80% 44%, 92% 78%, 100% 62%, 100% 100%);
+      z-index: 1;
+    }
+
+    .section {
+      position: relative;
+      z-index: 2;
+      padding: 64px 0;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .section-subtitle {
+      max-width: 700px;
+      margin: 16px auto 0;
+      color: var(--slate-300);
+      line-height: 1.7;
+    }
+
+    .choice-grid {
+      margin-top: 34px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .choice-card {
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+      min-height: 260px;
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: var(--white);
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+    }
+
+    .choice-card:hover:not(:disabled) {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.14);
+    }
+
+    .choice-card:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .choice-card.yes {
+      border-color: rgba(224, 242, 254, 0.36);
+      background: rgba(224, 242, 254, 0.15);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .choice-card.yes::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
+    }
+
+    .choice-card.yes:hover::before {
+      animation: shimmer 2.8s linear infinite;
+    }
+
+    @keyframes shimmer {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .choice-top {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .choice-icon {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.10);
+      font-size: 24px;
+    }
+
+    .selected-pill {
+      display: none;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(110, 231, 183, 0.20);
+      color: var(--emerald-100);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .choice-card.selected .selected-pill {
+      display: inline-flex;
+    }
+
+    .choice-title {
+      position: relative;
+      margin: 0;
+      font-size: 22px;
+      font-weight: 950;
+    }
+
+    .choice-description {
+      position: relative;
+      min-height: 70px;
+      margin: 12px 0 0;
+      color: var(--slate-300);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .choose-text {
+      position: relative;
+      margin-top: 24px;
+      color: var(--sky-100);
+      font-weight: 900;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .details-card, .registered-card {
+      padding: 30px;
+    }
+
+    .detail-list {
+      margin-top: 28px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .detail-item {
+      display: flex;
+      gap: 15px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 16px;
+    }
+
+    .detail-icon {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.10);
+      color: var(--sky-100);
+      font-size: 22px;
+    }
+
+    .detail-title {
+      margin: 0;
+      color: var(--white);
+      font-weight: 900;
+    }
+
+    .detail-text {
+      margin: 6px 0 0;
+      color: var(--slate-300);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .registered-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .count-pill {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.10);
+      padding: 8px 14px;
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    .registration-list {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 4px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .empty-state, .loading-state {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.08);
+      padding: 18px;
+      border-radius: 22px;
+      color: var(--slate-300);
+    }
+
+    .registration-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.08);
+      padding: 16px;
+      border-radius: 22px;
+    }
+
+    .registration-name {
+      margin: 0;
+      color: var(--white);
+      font-weight: 900;
+    }
+
+    .registration-date {
+      margin: 5px 0 0;
+      color: var(--slate-400);
+      font-size: 13px;
+    }
+
+    .answer-pill {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+      background: rgba(125,211,252,0.15);
+      color: var(--sky-100);
+    }
+
+    .answer-yes {
+      background: rgba(110,231,183,0.20);
+      color: var(--emerald-100);
+    }
+
+    .answer-maybe {
+      background: rgba(251,191,36,0.20);
+      color: var(--amber-100);
+    }
+
+    .answer-no {
+      background: rgba(226,232,240,0.15);
+      color: var(--slate-200);
+    }
+
+    .final-card {
+      max-width: 980px;
+      margin: 0 auto;
+      text-align: center;
+      border-radius: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.10);
+      backdrop-filter: blur(20px);
+      padding: 48px;
+    }
+
+    .final-title {
+      margin: 14px 0 0;
+      color: var(--white);
+      font-size: clamp(40px, 6vw, 66px);
+      line-height: 1;
+      letter-spacing: -0.06em;
+      font-weight: 950;
+    }
+
+    .final-text {
+      max-width: 720px;
+      margin: 20px auto 0;
+      color: var(--slate-300);
+      line-height: 1.7;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      color: var(--slate-400);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 960px) {
+      .hero-grid,
+      .details-grid,
+      .choice-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-grid {
+        padding: 48px 0 80px;
+      }
+
+      .privacy-pill {
+        display: none;
+      }
+
+      .choice-card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .container {
+        width: min(100% - 28px, 1180px);
+      }
+
+      .hero {
+        padding-top: 18px;
+      }
+
+      h1 {
+        letter-spacing: -0.055em;
+      }
+
+      .actions {
+        display: grid;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .join-card,
+      .details-card,
+      .registered-card,
+      .final-card {
+        padding: 22px;
+      }
+
+      .card-header,
+      .registered-header {
+        flex-direction: column;
+      }
+
+      .registration-item {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .answer-pill {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="soft-grid"></div>
+    <div class="snow-layer" id="snowLayer"></div>
+
+    <section class="hero container">
+      <nav class="nav">
+        <div class="brand">
+          <div class="brand-icon">🏔️</div>
+          <div>
+            <p class="brand-title">Mkinvarwveri</p>
+            <p class="brand-subtitle">Mountain invitation</p>
+          </div>
+        </div>
+
+        <div class="privacy-pill">
+          <span>🛡️</span>
+          <span>Only name and answer are saved</span>
+        </div>
+      </nav>
+
+      <div class="hero-grid">
+        <div>
+          <div class="badge">✨ One mountain, one answer, one adventure.</div>
+
+          <h1>Will you go to the Mkinvarwveri with me?</h1>
+
+          <p class="hero-text">
+            Fresh air, snow peaks, unforgettable views, and one adventure we’ll remember.
+            Enter your name first, then choose your answer.
+          </p>
+
+          <div class="actions">
+            <a class="btn btn-primary" href="#join">Start →</a>
+            <a class="btn btn-secondary" href="#registered">See who joined</a>
+          </div>
+
+          <div class="metrics">
+            <div class="metric-card">
+              <p class="metric-value" id="metricTotal">0</p>
+              <p class="metric-label">Registered</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-value" id="metricComing">0</p>
+              <p class="metric-label">Coming</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-value" id="metricMaybe">0</p>
+              <p class="metric-label">Maybe</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="join" class="glass-card join-card">
+          <div class="card-header">
+            <div>
+              <p class="section-kicker">Step 1</p>
+              <h2 class="card-title">Enter your name</h2>
+              <p class="muted">
+                Your name appears in the registered list so the next visitor can see who joined before them.
+              </p>
+            </div>
+            <div class="icon-box">👥</div>
+          </div>
+
+          <form id="nameForm" class="form">
+            <label for="nameInput" class="sr-only">Enter your name</label>
+            <input
+              id="nameInput"
+              class="name-input"
+              maxlength="40"
+              autocomplete="name"
+              placeholder="Enter your name"
+            />
+            <button id="saveNameButton" class="btn btn-primary" type="submit">
+              Save my name ✓
+            </button>
+          </form>
+
+          <div class="message-stack" id="messageStack"></div>
+
+          <div class="progress-box">
+            <p class="progress-title">⏱️ Progress</p>
+            <div id="stepName" class="step">
+              <span class="step-dot">✓</span>
+              <span>Name saved</span>
+            </div>
+            <div id="stepAnswer" class="step">
+              <span class="step-dot">✓</span>
+              <span>Answer selected</span>
+            </div>
+            <div id="stepRegistered" class="step">
+              <span class="step-dot">✓</span>
+              <span>Registered for the adventure</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mountain-mask"></div>
+    </section>
+
+    <section id="choice-section" class="section container">
+      <div class="center">
+        <p class="section-kicker">Step 2</p>
+        <h2 class="section-title">Choose your answer</h2>
+        <p class="section-subtitle">
+          The choice unlocks after your name is saved. The “Yes” path is highly recommended.
+        </p>
+      </div>
+
+      <div class="choice-grid">
+        <button class="choice-card yes" data-answer="yes" disabled>
+          <div class="choice-top">
+            <div class="choice-icon">💙</div>
+            <span class="selected-pill">Selected</span>
+          </div>
+          <h3 class="choice-title">Yes, I’m coming</h3>
+          <p class="choice-description">
+            Count me in for the snow peaks, views, and adventure.
+          </p>
+          <p class="choose-text">Choose this →</p>
+        </button>
+
+        <button class="choice-card" data-answer="maybe" disabled>
+          <div class="choice-top">
+            <div class="choice-icon">✨</div>
+            <span class="selected-pill">Selected</span>
+          </div>
+          <h3 class="choice-title">Maybe, I need more details</h3>
+          <p class="choice-description">
+            I like the idea, but I want to know the plan first.
+          </p>
+          <p class="choose-text">Choose this →</p>
+        </button>
+
+        <button class="choice-card" data-answer="no" disabled>
+          <div class="choice-top">
+            <div class="choice-icon">✕</div>
+            <span class="selected-pill">Selected</span>
+          </div>
+          <h3 class="choice-title">No, not this time</h3>
+          <p class="choice-description">
+            I’ll skip this one, but I’m still invited next time.
+          </p>
+          <p class="choose-text">Choose this →</p>
+        </button>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="details-grid">
+        <div class="glass-card details-card">
+          <div class="icon-box">📍</div>
+          <p class="section-kicker" style="margin-top: 24px;">Trip details</p>
+          <h2 class="card-title">Mkinvarwveri adventure</h2>
+          <p class="muted">
+            Destination: Mkinvarwveri. Mood: friendship, mountain views, snow air,
+            and a story worth remembering.
+          </p>
+
+          <div class="detail-list">
+            <div class="detail-item">
+              <div class="detail-icon">🎒</div>
+              <div>
+                <p class="detail-title">What to bring</p>
+                <p class="detail-text">
+                  Warm clothes, water, snacks, comfortable shoes, and positive energy.
+                </p>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-icon">🏔️</div>
+              <div>
+                <p class="detail-title">Difficulty</p>
+                <p class="detail-text">
+                  Moderate adventure. The exact plan and timing will be shared later.
+                </p>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-icon">🌟</div>
+              <div>
+                <p class="detail-title">Why come?</p>
+                <p class="detail-text">
+                  Because ordinary days are easy to forget. Mountain days are not.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="registered" class="glass-card registered-card">
+          <div class="registered-header">
+            <div>
+              <p class="section-kicker">Step 3</p>
+              <h2 class="card-title">Already registered</h2>
+              <p class="muted" id="databaseModeText">
+                Preview mode: add Supabase keys to share this list across devices.
+              </p>
+            </div>
+            <div class="count-pill"><span id="totalCount">0</span> total</div>
+          </div>
+
+          <div id="registrationList" class="registration-list">
+            <div class="loading-state">
+              <span class="spinner"></span>
+              Loading registrations...
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="final-card">
+        <p class="section-kicker">Final invitation</p>
+        <h2 class="final-title">Say yes to the mountain.</h2>
+        <p class="final-text">
+          You can decide now or choose maybe. Either way, the invitation is personal:
+          Mkinvarwveri will be better with you there.
+        </p>
+        <div class="actions" style="justify-content: center;">
+          <a class="btn btn-primary" href="#join">Join the mountain adventure →</a>
+        </div>
+        <p class="footer-note">
+          Privacy note: only your name, answer, and registration time are saved for this invitation.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /******************************************************************
+     * SUPABASE CONFIGURATION
+     *
+     * Paste your public Supabase values here.
+     * These are public frontend values, not your private service-role key.
+     ******************************************************************/
+
+    const SUPABASE_URL = "";
+    const SUPABASE_ANON_KEY = "";
+
+    /******************************************************************
+     * SUPABASE SQL SCHEMA
+     *
+     * Run this in Supabase SQL Editor:
+     *
+     * create table if not exists public.registrations (
+     *   id uuid primary key default gen_random_uuid(),
+     *   name text not null check (char_length(name) between 1 and 40),
+     *   answer text check (answer in ('yes', 'maybe', 'no') or answer is null),
+     *   created_at timestamptz not null default now(),
+     *   updated_at timestamptz not null default now()
+     * );
+     *
+     * create or replace function public.set_updated_at()
+     * returns trigger
+     * language plpgsql
+     * as $$
+     * begin
+     *   new.updated_at = now();
+     *   return new;
+     * end;
+     * $$;
+     *
+     * drop trigger if exists registrations_set_updated_at on public.registrations;
+     *
+     * create trigger registrations_set_updated_at
+     * before update on public.registrations
+     * for each row
+     * execute function public.set_updated_at();
+     *
+     * alter table public.registrations enable row level security;
+     *
+     * drop policy if exists "Public can read registrations" on public.registrations;
+     * create policy "Public can read registrations"
+     * on public.registrations
+     * for select
+     * to anon
+     * using (true);
+     *
+     * drop policy if exists "Public can insert registrations" on public.registrations;
+     * create policy "Public can insert registrations"
+     * on public.registrations
+     * for insert
+     * to anon
+     * with check (char_length(name) between 1 and 40);
+     *
+     * drop policy if exists "Public can update registrations" on public.registrations;
+     * create policy "Public can update registrations"
+     * on public.registrations
+     * for update
+     * to anon
+     * using (true)
+     * with check (answer in ('yes', 'maybe', 'no') or answer is null);
+     ******************************************************************/
+
+    const LOCAL_STORAGE_KEY = "mkinvarwveri_registrations";
+    const CURRENT_ID_KEY = "mkinvarwveri_current_registration_id";
+
+    const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+    const supabaseClient = hasSupabaseConfig
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    const choices = {
+      yes: {
+        label: "Coming",
+        confirmation: "Perfect! Mkinvarwveri is waiting for us."
+      },
+      maybe: {
+        label: "Maybe",
+        confirmation: "No problem. I’ll send you more details."
+      },
+      no: {
+        label: "Not this time",
+        confirmation: "Maybe next adventure."
+      }
+    };
+
+    let registrations = [];
+    let currentId = localStorage.getItem(CURRENT_ID_KEY) || null;
+    let finalMessageShown = false;
+
+    const snowLayer = document.getElementById("snowLayer");
+    const nameForm = document.getElementById("nameForm");
+    const nameInput = document.getElementById("nameInput");
+    const saveNameButton = document.getElementById("saveNameButton");
+    const messageStack = document.getElementById("messageStack");
+    const registrationList = document.getElementById("registrationList");
+    const totalCount = document.getElementById("totalCount");
+    const databaseModeText = document.getElementById("databaseModeText");
+    const metricTotal = document.getElementById("metricTotal");
+    const metricComing = document.getElementById("metricComing");
+    const metricMaybe = document.getElementById("metricMaybe");
+    const stepName = document.getElementById("stepName");
+    const stepAnswer = document.getElementById("stepAnswer");
+    const stepRegistered = document.getElementById("stepRegistered");
+    const choiceButtons = Array.from(document.querySelectorAll(".choice-card"));
+
+    function createSnow() {
+      for (let i = 0; i < 34; i++) {
+        const dot = document.createElement("span");
+        dot.className = "snow-dot";
+        const size = Math.random() * 3 + 1.5;
+        dot.style.left = Math.random() * 100 + "%";
+        dot.style.width = size + "px";
+        dot.style.height = size + "px";
+        dot.style.animationDelay = Math.random() * 8 + "s";
+        dot.style.animationDuration = Math.random() * 7 + 8 + "s";
+        snowLayer.appendChild(dot);
+      }
+    }
+
+    function createId() {
+      if (crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return Math.random().toString(36).slice(2);
+    }
+
+    function readLocalRegistrations() {
+      try {
+        return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function writeLocalRegistrations(items) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function cleanName(value) {
+      return value.trim().replace(/\s+/g, " ");
+    }
+
+    function formatAnswer(answer) {
+      if (!answer) return "Waiting for answer";
+      return choices[answer]?.label || "Waiting for answer";
+    }
+
+    function formatDate(value) {
+      try {
+        return new Intl.DateTimeFormat(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(new Date(value));
+      } catch {
+        return "Just now";
+      }
+    }
+
+    function setMessages({ error = "", success = "", final = "" }) {
+      messageStack.innerHTML = "";
+
+      if (error) {
+        const div = document.createElement("div");
+        div.className = "message message-error";
+        div.textContent = error;
+        messageStack.appendChild(div);
+      }
+
+      if (success) {
+        const div = document.createElement("div");
+        div.className = "message message-success";
+        div.textContent = success;
+        messageStack.appendChild(div);
+      }
+
+      if (final) {
+        finalMessageShown = true;
+        const div = document.createElement("div");
+        div.className = "message message-final";
+        div.textContent = final;
+        messageStack.appendChild(div);
+      }
+    }
+
+    function getCurrentRegistration() {
+      return registrations.find((item) => item.id === currentId) || null;
+    }
+
+    function updateProgress() {
+      const current = getCurrentRegistration();
+
+      stepName.classList.toggle("done", Boolean(current));
+      stepAnswer.classList.toggle("done", Boolean(current && current.answer));
+      stepRegistered.classList.toggle("done", Boolean(finalMessageShown));
+
+      choiceButtons.forEach((button) => {
+        button.disabled = !current;
+        button.classList.toggle("selected", Boolean(current && current.answer === button.dataset.answer));
+      });
+    }
+
+    function updateMetrics() {
+      const coming = registrations.filter((item) => item.answer === "yes").length;
+      const maybe = registrations.filter((item) => item.answer === "maybe").length;
+
+      metricTotal.textContent = registrations.length;
+      metricComing.textContent = coming;
+      metricMaybe.textContent = maybe;
+      totalCount.textContent = registrations.length;
+    }
+
+    function renderRegistrations() {
+      updateMetrics();
+      updateProgress();
+
+      if (hasSupabaseConfig) {
+        databaseModeText.textContent = "This list updates from the shared database.";
+      } else {
+        databaseModeText.textContent = "Preview mode: add Supabase keys to share this list across devices.";
+      }
+
+      registrationList.innerHTML = "";
+
+      if (registrations.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "No one has registered yet. Be the first.";
+        registrationList.appendChild(empty);
+        return;
+      }
+
+      registrations.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "registration-item";
+
+        const left = document.createElement("div");
+
+        const name = document.createElement("p");
+        name.className = "registration-name";
+        name.textContent = item.name;
+
+        const date = document.createElement("p");
+        date.className = "registration-date";
+        date.textContent = formatDate(item.created_at);
+
+        left.appendChild(name);
+        left.appendChild(date);
+
+        const answer = document.createElement("span");
+        answer.className = "answer-pill";
+        if (item.answer === "yes") answer.classList.add("answer-yes");
+        if (item.answer === "maybe") answer.classList.add("answer-maybe");
+        if (item.answer === "no") answer.classList.add("answer-no");
+        answer.textContent = formatAnswer(item.answer);
+
+        row.appendChild(left);
+        row.appendChild(answer);
+        registrationList.appendChild(row);
+      });
+    }
+
+    async function loadRegistrations() {
+      registrationList.innerHTML = `
+        <div class="loading-state">
+          <span class="spinner"></span>
+          Loading registrations...
+        </div>
+      `;
+
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from("registrations")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          registrations = readLocalRegistrations();
+          setMessages({
+            error: "Database connection failed. Local preview mode is available."
+          });
+        } else {
+          registrations = data || [];
+        }
+      } else {
+        registrations = readLocalRegistrations();
+      }
+
+      renderRegistrations();
+    }
+
+    async function saveName(event) {
+      event.preventDefault();
+      setMessages({});
+      finalMessageShown = false;
+
+      const name = cleanName(nameInput.value);
+
+      if (!name) {
+        setMessages({ error: "Please enter your name first." });
+        return;
+      }
+
+      if (name.length > 40) {
+        setMessages({ error: "Please use a shorter name, maximum 40 characters." });
+        return;
+      }
+
+      saveNameButton.disabled = true;
+      saveNameButton.innerHTML = '<span class="spinner"></span> Saving...';
+
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from("registrations")
+          .insert({ name, answer: null })
+          .select()
+          .single();
+
+        if (error || !data) {
+          saveNameButton.disabled = false;
+          saveNameButton.textContent = "Save my name ✓";
+          setMessages({
+            error: "I could not save your name to the shared list. Please check Supabase setup."
+          });
+          return;
+        }
+
+        currentId = data.id;
+        localStorage.setItem(CURRENT_ID_KEY, currentId);
+        registrations = [data, ...registrations];
+      } else {
+        const now = new Date().toISOString();
+        const saved = {
+          id: createId(),
+          name,
+          answer: null,
+          created_at: now,
+          updated_at: now
+        };
+
+        registrations = [saved, ...readLocalRegistrations()];
+        writeLocalRegistrations(registrations);
+        currentId = saved.id;
+        localStorage.setItem(CURRENT_ID_KEY, currentId);
+      }
+
+      saveNameButton.disabled = false;
+      saveNameButton.textContent = "Save my name ✓";
+      setMessages({ success: "Your name is saved. Now choose your answer." });
+      renderRegistrations();
+
+      setTimeout(() => {
+        document.getElementById("choice-section").scrollIntoView({ behavior: "smooth" });
+      }, 150);
+    }
+
+    async function saveChoice(answer) {
+      if (!currentId) {
+        setMessages({ error: "Please save your name first." });
+        return;
+      }
+
+      finalMessageShown = false;
+      setMessages({});
+
+      const selectedButton = choiceButtons.find((button) => button.dataset.answer === answer);
+      const originalText = selectedButton.querySelector(".choose-text").textContent;
+      selectedButton.querySelector(".choose-text").innerHTML = '<span class="spinner"></span> Saving answer...';
+      choiceButtons.forEach((button) => button.disabled = true);
+
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from("registrations")
+          .update({ answer })
+          .eq("id", currentId)
+          .select()
+          .single();
+
+        if (error || !data) {
+          selectedButton.querySelector(".choose-text").textContent = originalText;
+          setMessages({ error: "I could not save your answer. Please try again." });
+          updateProgress();
+          return;
+        }
+
+        registrations = registrations.map((item) => item.id === currentId ? data : item);
+      } else {
+        const now = new Date().toISOString();
+        registrations = readLocalRegistrations().map((item) =>
+          item.id === currentId ? { ...item, answer, updated_at: now } : item
+        );
+        writeLocalRegistrations(registrations);
+      }
+
+      selectedButton.querySelector(".choose-text").textContent = originalText;
+      setMessages({ final: choices[answer].confirmation });
+      renderRegistrations();
+    }
+
+    function subscribeToLiveUpdates() {
+      if (!supabaseClient) return;
+
+      supabaseClient
+        .channel("registrations-live")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "registrations"
+          },
+          async () => {
+            const { data } = await supabaseClient
+              .from("registrations")
+              .select("*")
+              .order("created_at", { ascending: false });
+
+            if (data) {
+              registrations = data;
+              renderRegistrations();
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    nameForm.addEventListener("submit", saveName);
+
+    choiceButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        saveChoice(button.dataset.answer);
+      });
+    });
+
+    createSnow();
+    loadRegistrations();
+    subscribeToLiveUpdates();
+  </script>
+</body>
+</html>
